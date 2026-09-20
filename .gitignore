@@ -1,0 +1,7 @@
+.env
+*.db
+.venv/
+__pycache__/
+*.pyc
+webapp_jobs/
+.claude/

@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: rosetta-translator
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    # --timeout 600: the /upload request extracts the zip synchronously
+    # before handing off to the background pipeline thread - a ~300MB
+    # upload can take a while on the free tier's 0.1 CPU, so the default
+    # 30s gunicorn worker timeout isn't enough.
+    # --workers 1: free tier has 512MB RAM total; one worker avoids
+    # multiplying memory usage. --threads lets status polling stay
+    # responsive while a job runs in its background thread.
+    startCommand: "gunicorn app:app --timeout 600 --workers 1 --threads 4"
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: SITE_PASSWORD
+        sync: false
+      - key: ROSETTA_OPENAI_MODEL
+        value: gpt-5-mini

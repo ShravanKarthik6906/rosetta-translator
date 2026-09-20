@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Rosetta - Job {{ job_id }}</title>
+  <style>
+    body { font-family: -apple-system, system-ui, sans-serif; max-width: 720px; margin: 40px auto; color: #1a1a1a; }
+    h1 { font-size: 20px; }
+    .stage-box { border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    .stage-name { font-weight: 600; font-size: 16px; }
+    .progress-bar { background: #eee; border-radius: 6px; height: 10px; margin-top: 10px; overflow: hidden; }
+    .progress-fill { background: #1a1a1a; height: 100%; width: 0%; transition: width 0.2s; }
+    .progress-text { color: #666; font-size: 13px; margin-top: 6px; }
+    .log { background: #fafafa; border: 1px solid #eee; border-radius: 6px; padding: 12px 16px; font-family: monospace; font-size: 12.5px; max-height: 220px; overflow-y: auto; white-space: pre-wrap; }
+    .status-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    .status-running { background: #fff3cd; color: #856404; }
+    .status-done { background: #d4edda; color: #155724; }
+    .status-error { background: #f8d7da; color: #721c24; }
+    .results { margin-top: 20px; }
+    .lang-result { border: 1px solid #ddd; border-radius: 8px; padding: 16px 20px; margin-bottom: 14px; }
+    .lang-result h3 { margin: 0 0 8px 0; font-size: 15px; }
+    .downloads a { display: inline-block; margin-right: 16px; color: #0645ad; text-decoration: none; font-size: 14px; }
+    .downloads a:hover { text-decoration: underline; }
+    .downloads a.secondary { color: #888; font-size: 13px; }
+    .exc-counts { color: #555; font-size: 13px; margin-top: 8px; }
+    .usage-box { border: 1px solid #ddd; border-radius: 8px; padding: 16px 20px; margin-top: 20px; }
+    .usage-box .note { color: #a66; font-size: 13px; margin-top: 6px; }
+    .error-box { background: #f8d7da; color: #721c24; border-radius: 8px; padding: 16px 20px; margin-top: 20px; }
+    a.back { font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h1>Translation job <code>{{ job_id }}</code> <span id="status-badge" class="status-badge status-running">running</span></h1>
+
+  <div class="stage-box">
+    <div class="stage-name" id="stage-name">Starting...</div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="progress-text" id="progress-text"></div>
+  </div>
+
+  <div class="log" id="log"></div>
+
+  <div id="results" class="results"></div>
+  <div id="error-box"></div>
+
+  <p style="margin-top:24px;"><a class="back" href="/">&larr; Start another translation</a></p>
+
+  <script src="{{ url_for('static', filename='app.js') }}" data-job-id="{{ job_id }}"></script>
+</body>
+</html>
