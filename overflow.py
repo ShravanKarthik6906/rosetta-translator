@@ -50,24 +50,28 @@ FONTS_ASSET_DIR = Path(__file__).parent / "fonts"
 # actually resolved onto translatable text in the real document (see
 # investigation: Myriad Pro, Museo Sans, Bunday Sans - Arial/Zapf/Wingdings
 # etc. never apply to translatable runs).
+#
+# Bundled as real files under fonts/ (SIL OFL licensed, see LICENSE_LiberationSans.txt
+# and OFL_Inter.txt) rather than pointing at macOS system font paths - this runs on
+# Render's Linux containers in production, not just on a Mac.
 FONT_SUBSTITUTES = {
-    ("Myriad Pro", "Regular"): ("/System/Library/Fonts/Supplemental/Arial.ttf", None),
-    ("Myriad Pro", "Bold"): ("/System/Library/Fonts/Supplemental/Arial Bold.ttf", None),
-    ("Myriad Pro", "Italic"): ("/System/Library/Fonts/Supplemental/Arial Italic.ttf", None),
-    ("Myriad Pro", "Black"): ("/System/Library/Fonts/Supplemental/Arial Black.ttf", None),
-    ("Myriad Pro", "Semibold"): ("/System/Library/Fonts/Supplemental/Arial Bold.ttf", None),  # Arial has no Semibold; nearest available
-    ("Myriad Pro", "SemiCondensed"): ("/System/Library/Fonts/Supplemental/Arial Narrow.ttf", None),  # nearest condensed available
-    ("Museo Sans", "300"): ("/System/Library/Fonts/Avenir Next.ttc", 7),   # Avenir Next Regular
-    ("Museo Sans", "500"): ("/System/Library/Fonts/Avenir Next.ttc", 5),   # Avenir Next Medium
-    ("Museo Sans", "700"): ("/System/Library/Fonts/Avenir Next.ttc", 0),   # Avenir Next Bold
-    ("Museo Sans", "900"): ("/System/Library/Fonts/Avenir Next.ttc", 8),   # Avenir Next Heavy
-    ("Bunday Sans", "Heavy"): ("/System/Library/Fonts/HelveticaNeue.ttc", 1),  # Helvetica Neue Bold; no Heavy/Black face available
-    ("Bunday Sans", "ExtraBold"): ("/System/Library/Fonts/HelveticaNeue.ttc", 1),  # Helvetica Neue Bold; no ExtraBold face available
+    ("Myriad Pro", "Regular"): (str(FONTS_ASSET_DIR / "LiberationSans-Regular.ttf"), None),
+    ("Myriad Pro", "Bold"): (str(FONTS_ASSET_DIR / "LiberationSans-Bold.ttf"), None),
+    ("Myriad Pro", "Italic"): (str(FONTS_ASSET_DIR / "LiberationSans-Italic.ttf"), None),
+    ("Myriad Pro", "Black"): (str(FONTS_ASSET_DIR / "LiberationSans-Bold.ttf"), None),  # Liberation Sans has no Black face; nearest available
+    ("Myriad Pro", "Semibold"): (str(FONTS_ASSET_DIR / "LiberationSans-Bold.ttf"), None),  # no Semibold; nearest available
+    ("Myriad Pro", "SemiCondensed"): (str(FONTS_ASSET_DIR / "LiberationSans-Regular.ttf"), None),  # no condensed face; using the wider regular face over-, not under-, estimates width, so it stays a safe (conservative) overflow check
+    ("Museo Sans", "300"): (str(FONTS_ASSET_DIR / "Inter-Regular.ttf"), None),
+    ("Museo Sans", "500"): (str(FONTS_ASSET_DIR / "Inter-Medium.ttf"), None),
+    ("Museo Sans", "700"): (str(FONTS_ASSET_DIR / "Inter-Bold.ttf"), None),
+    ("Museo Sans", "900"): (str(FONTS_ASSET_DIR / "Inter-Black.ttf"), None),
+    ("Bunday Sans", "Heavy"): (str(FONTS_ASSET_DIR / "Inter-ExtraBold.ttf"), None),  # no Heavy face; nearest available
+    ("Bunday Sans", "ExtraBold"): (str(FONTS_ASSET_DIR / "Inter-ExtraBold.ttf"), None),
 }
 # Approximate flags: substitutes with no exact weight match in the target family.
 FONT_SUBSTITUTES_APPROXIMATE = {
-    ("Myriad Pro", "Semibold"), ("Myriad Pro", "SemiCondensed"),
-    ("Bunday Sans", "Heavy"), ("Bunday Sans", "ExtraBold"),
+    ("Myriad Pro", "Black"), ("Myriad Pro", "Semibold"), ("Myriad Pro", "SemiCondensed"),
+    ("Bunday Sans", "Heavy"),
 }
 
 ARABIC_FONT_REGULAR = (str(FONTS_ASSET_DIR / "NotoSansArabic-Regular.ttf"), None)
@@ -177,9 +181,9 @@ def resolve_font_file(family, font_style, target_language):
         return path, num, True, note
 
     # Unknown family/style combo not seen in our investigation - fall back to
-    # Arial Regular rather than crashing, but say so loudly.
-    return ("/System/Library/Fonts/Supplemental/Arial.ttf", None, True,
-            f"No substitute configured for '{family} {font_style}' - fell back to Arial Regular as a last resort.")
+    # Liberation Sans Regular rather than crashing, but say so loudly.
+    return (str(FONTS_ASSET_DIR / "LiberationSans-Regular.ttf"), None, True,
+            f"No substitute configured for '{family} {font_style}' - fell back to Liberation Sans Regular as a last resort.")
 
 
 def measure_text_width_pt(text, family, font_style, point_size, target_language):
