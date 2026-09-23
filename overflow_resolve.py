@@ -22,7 +22,14 @@ from overflow import StyleResolver, get_frame_geometry, resolve_overflow, retran
 
 
 def run_overflow_checks(db_path, document_id, idml_extracted_dir, target_languages,
-                         api_key=None, model=None, dry_run=False):
+                         api_key=None, model=None, dry_run=False,
+                         progress_callback=None, usage_callback=None):
+    """
+    progress_callback(fragments_done, fragments_total), if given, is called
+    after each translated fragment is checked - UI progress only, optional.
+    usage_callback is forwarded to retranslate_shorter for real token-usage
+    reporting on tier-4 calls, optional.
+    """
     import os
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
@@ -61,16 +68,21 @@ def run_overflow_checks(db_path, document_id, idml_extracted_dir, target_languag
                      "(SELECT id FROM text_runs) AND target_language IN ({})".format(
                          ",".join("?" * len(target_languages))), target_languages)
 
-    for r in rows:
+    total_fragments = len(rows)
+    for frag_index, r in enumerate(rows):
         frame_id = r["frame_self_id"]
         if not frame_id:
             stats["no_geometry"] += 1
+            if progress_callback:
+                progress_callback(frag_index + 1, total_fragments)
             continue
         if frame_id not in geo_cache:
             geo_cache[frame_id] = get_frame_geometry(idml_extracted_dir, frame_id)
         geo = geo_cache[frame_id]
         if geo is None:
             stats["no_geometry"] += 1
+            if progress_callback:
+                progress_callback(frag_index + 1, total_fragments)
             continue
 
         style = resolver.resolve(r["character_style"], r["paragraph_style"])
@@ -85,7 +97,7 @@ def run_overflow_checks(db_path, document_id, idml_extracted_dir, target_languag
             stats["retranslate_calls"] += 1
             retranslated_text = retranslate_shorter(
                 r["raw_text"], r["translated_text"], LANGUAGE_NAMES[r["target_language"]],
-                overage_pct, client, model
+                overage_pct, client, model, usage_callback=usage_callback
             )
             retry = resolve_overflow(retranslated_text, style["family"], style["font_style"],
                                       style["point_size"], style["leading"], geo, r["target_language"])
@@ -109,6 +121,8 @@ def run_overflow_checks(db_path, document_id, idml_extracted_dir, target_languag
         stats[result["resolution"]] += 1
 
         if dry_run:
+            if progress_callback:
+                progress_callback(frag_index + 1, total_fragments)
             continue  # preview only - no DB writes below this point
 
         if result["resolution"] == "unresolved":
@@ -147,6 +161,8 @@ def run_overflow_checks(db_path, document_id, idml_extracted_dir, target_languag
             datetime.now(timezone.utc).isoformat(),
         ))
         conn.commit()
+        if progress_callback:
+            progress_callback(frag_index + 1, total_fragments)
 
     conn.close()
     return stats

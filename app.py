@@ -35,6 +35,7 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify, s
 import deconstruct
 import story_placements
 import translate
+import overflow_resolve
 import reconstruct
 import exception_checks
 
@@ -228,6 +229,17 @@ def run_pipeline(job_id, job_dir: Path, idml_extracted_dir: Path, idml_filename:
             usage_callback=lambda model, p, c: _add_usage(job_id, model, p, c),
         )
         _log_job(job_id, f"Translation complete: {stats}")
+
+        # --- Stage 3b: overflow check (real font-metric + frame-geometry fit,
+        # controlled shrink, retranslate-for-brevity on genuine failures) ---
+        _update_job(job_id, stage="overflow check", stage_progress=None)
+        _log_job(job_id, "Checking real layout fit (font metrics + frame geometry) and fixing overflow...")
+        overflow_stats = overflow_resolve.run_overflow_checks(
+            db_path, document_id, str(idml_extracted_dir), langs,
+            progress_callback=lambda done, total: _update_job(job_id, stage_progress=[done, total]),
+            usage_callback=lambda model, p, c: _add_usage(job_id, model, p, c),
+        )
+        _log_job(job_id, f"Overflow check complete: {overflow_stats}")
 
         # --- Stage 4: reconstruct delivery package per language ---
         results = {}

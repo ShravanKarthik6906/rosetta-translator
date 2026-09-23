@@ -382,12 +382,16 @@ def resolve_overflow(text, family, font_style, point_size, leading, geo, target_
             "shrink_pct": shrink_steps_pct[-1] if shrink_steps_pct else 0, "detail": result}
 
 
-def retranslate_shorter(raw_text, current_translation, target_lang_name, overage_pct, client, model):
+def retranslate_shorter(raw_text, current_translation, target_lang_name, overage_pct, client, model, usage_callback=None):
     """
     Tier 4: one real, billed API call asking for a shorter phrasing of the
     SAME fragment that preserves meaning. Only call this after tiers 1-3
     have genuinely failed (checked by the caller) - never speculatively.
     Returns the raw shortened translation string.
+
+    usage_callback(model, prompt_tokens, completion_tokens), if given, is
+    called with the real token counts from this call - for UI/cost
+    reporting only, optional (same convention as translate.py).
     """
     system_prompt = (
         f"You are adjusting a {target_lang_name} translation of a K-12 math worksheet fragment "
@@ -415,4 +419,6 @@ def retranslate_shorter(raw_text, current_translation, target_lang_name, overage
             {"role": "user", "content": user_prompt},
         ],
     )
+    if usage_callback and response.usage:
+        usage_callback(model, response.usage.prompt_tokens, response.usage.completion_tokens)
     return response.choices[0].message.content.strip()

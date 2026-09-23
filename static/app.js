@@ -12,6 +12,7 @@ function fmtStage(stage) {
     deconstruct: "Deconstructing IDML (extracting text)",
     story_placements: "Mapping stories to pages/frames",
     translate: "Translating (live API calls)",
+    "overflow check": "Checking layout fit & fixing overflow (real font metrics)",
     "exception checks": "Running exception checks",
     done: "Done",
   };
