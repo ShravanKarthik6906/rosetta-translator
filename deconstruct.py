@@ -186,7 +186,7 @@ def deconstruct(idml_extracted_dir: str, idml_filename: str, db_path: str, progr
 
 if __name__ == "__main__":
     import sys
-    idml_dir = sys.argv[1] if len(sys.argv) > 1 else "/home/claude/idml_work/extracted"
-    idml_name = sys.argv[2] if len(sys.argv) > 2 else "RCM07_NA_SW_U01_L03.idml"
-    db_path = sys.argv[3] if len(sys.argv) > 3 else "/home/claude/rosetta_v3/rosetta.db"
+    idml_dir = sys.argv[1] if len(sys.argv) > 1 else "idml_extracted"
+    idml_name = sys.argv[2] if len(sys.argv) > 2 else "YourFile.idml"
+    db_path = sys.argv[3] if len(sys.argv) > 3 else "rosetta.db"
     deconstruct(idml_dir, idml_name, db_path)

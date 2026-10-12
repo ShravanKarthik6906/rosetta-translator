@@ -8,9 +8,7 @@ re-run. In particular, do NOT re-run this whole script (or a scratch
 script importing it) just to extract a value from earlier output - each
 run is a fresh, non-deterministic call. If you need to inspect or reuse a
 prior result, copy the ALREADY-PRINTED output verbatim rather than
-re-invoking the API - see the rosetta_v3 session history for an example
-of this going wrong (a scratch script was appended to and re-run "to add
-a print statement," silently firing a second real translation call).
+re-invoking the API.
 When testing changes to the prompt/parsing logic, use --dry-run (no API
 calls) or scope tightly with --story-id/--paragraph-seq/--limit first.
 
@@ -292,7 +290,7 @@ if __name__ == "__main__":
     # *** Running this file makes LIVE, BILLED API calls unless --dry-run is
     # passed. Don't invoke it just to "check something" - use --dry-run or
     # scope with --story-id/--paragraph-seq/--limit first. ***
-    db_path = sys.argv[1] if len(sys.argv) > 1 else "/home/claude/rosetta_v3/rosetta.db"
+    db_path = sys.argv[1] if len(sys.argv) > 1 else "rosetta.db"
     document_id = int(sys.argv[2]) if len(sys.argv) > 2 else 1
     dry_run = "--dry-run" in sys.argv
 
